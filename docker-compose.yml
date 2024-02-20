@@ -1,0 +1,111 @@
+version: '3'
+
+# --------------------- Enabled services ---------------------
+# ubuntu - ubuntu:jammy-20240125
+# 우분투 안에서 script를 생성하여
+# nginx + php + mariadb + redis 를 직접 설치하여 구동한다
+#
+# --------------------- extends services ------------
+# 향후 docker로 운영할 것을 대비하여 certbot도 고려 해봐야겠다.
+
+networks:
+    noo9ya:
+
+services:
+    ubuntu:
+        container_name: ubuntu-22.04
+        image: ubuntu:22.04
+        privileged: true
+        # build:
+        #     context: ./
+        #     dockerfile: .docker/nginx/proxy/Dockerfile
+        #     args:
+        #         - UID=${UID:-noo9ya}
+        #         - GID=${GID:-noo9ya}
+        #         - USER=${USER:-www-data}
+        #         - TZ=${TZ}
+        restart: unless-stopped
+        ports:
+            - '80:80'
+            - '443:443'
+        volumes:
+            - ./src/:/home/
+        # - ./.logs/nginx/proxy:/var/log/nginx
+        # depends_on:
+        # - ubuntu-22.04
+        networks:
+            - noo9ya
+        command: ['bash', '-c', 'tail -f /dev/null']
+
+    # php:
+    #     container_name: php8.1
+    #     build:
+    #         context: ./
+    #         dockerfile: .docker/php/8.1/Dockerfile
+    #         args:
+    #             - APP_ENV=${APP_ENV:-local}
+    #             - UID=${UID:-noo9ya}
+    #             - GID=${GID:-noo9ya}
+    #             - USER=${USER:-www-data}
+    #             - TZ=${TZ}
+    #             - NODE_VERSION=${NODE_VERSION:-18}
+    #     restart: unless-stopped
+    #     #    ports:
+    #     #      - ":9000"
+    #     expose:
+    #         - '9000'
+    #     volumes:
+    #         - ./www:/var/www
+    #         - ./.logs/laravel:/var/log/laravel
+    #         - ./.logs/supervisor:/var/log/supervisor
+    #     networks:
+    #         - noo9ya
+
+    # mariadb:
+    #     container_name: mariadb
+    #     image: mariadb:11.1
+    #     restart: unless-stopped
+    #     volumes:
+    #         - ./.docker/mariadb/my.cnf:/etc/mysql/conf.d/my.cnf
+    #         - ./.docker/mariadb:/docker-entrypoint-initdb.d
+    #         - ./.database/mariadb:/var/lib/mysql
+    #     environment:
+    #         MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+    #         MYSQL_HOST: '${DB_HOST}'
+    #         #      MYSQL_ROOT_HOST: '${DB_HOST}'
+    #         MYSQL_ROOT_HOST: '%'
+    #         MYSQL_DATABASE: '${DB_DATABASE}'
+    #         MYSQL_USER: '${DB_USERNAME}'
+    #         MYSQL_PASSWORD: '${DB_PASSWORD}'
+    #         TZ: Asia/Seoul
+    #     ports:
+    #         - '${DB_FORWARD_PORT}:${DB_PORT}'
+    #     command:
+    #         - --character-set-server=utf8mb4
+    #         - --collation-server=utf8mb4_unicode_ci
+    #     networks:
+    #         - noo9ya
+    #     healthcheck:
+    #         test: ['CMD', 'ping', '-p ${DB_PASSWORD}']
+    #         retries: 3
+    #         timeout: 5s
+
+    # redis:
+    #     container_name: redis
+    #     image: redis:alpine
+    #     restart: unless-stopped
+    #     privileged: true
+    #     volumes:
+    #         - ./.docker/redis/redis.conf:/usr/local/redis/redis.conf
+    #         - ./.database/redis:/data
+    #     ports:
+    #         - '${REDIS_FORWARD_PORT}:${REDIS_PORT}'
+    #     command:
+    #         - redis-server
+    #         - /usr/local/redis/redis.conf
+    #     networks:
+    #         - noo9ya
+    #     healthcheck:
+    #         test: ['CMD', 'redis-cli', 'ping']
+    #         retries: 3
+    #         timeout: 5s
