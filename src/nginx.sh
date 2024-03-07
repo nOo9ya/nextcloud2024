@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "--------------------------------------------------------------"
+echo "---------------- Installing Nginx"
+echo "--------------------------------------------------------------"
+
 # Add latest nginx version repository
 add-apt-repository ppa:ondrej/nginx-mainline
 

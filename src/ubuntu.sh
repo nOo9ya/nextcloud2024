@@ -15,10 +15,14 @@ fi
 
 # 사용자 id 입력
 read -p "user id : " id
+echo "--------------------------------------------------------------"
 echo "---------------- Your user id is $id"
+echo "--------------------------------------------------------------"
 # 시용지 비밀번호 확인
 read -sp "password : " password
+echo "--------------------------------------------------------------"
 echo "---------------- Password Completed"
+echo "--------------------------------------------------------------"
 
 # 도메인이 있다면 도메인 호스트 설정
 read -p "Do you want to modify the hostname by entering the domain?(ex:domain.com) : " hostDomain
@@ -46,9 +50,13 @@ read -p "Do you want to modify the hostname by entering the domain?(ex:domain.co
 # fi
 
 if [ -d "/home/$id" ]; then
+    echo "--------------------------------------------------------------"
     echo "---------------- user home directory exist ----------------"
+    echo "--------------------------------------------------------------"
 else
+    echo "--------------------------------------------------------------"
     echo "---------------- user home directory not exist ----------------"
+    echo "--------------------------------------------------------------"
 
     echo "---------------- add user start ----------------"
 
@@ -75,7 +83,9 @@ if [ -f "/etc/sudoers" ]; then
 fi
 
 # OS 패키지 업데이트 및 업그레이드 및 불필요한 패키지 정리
+echo "--------------------------------------------------------------"
 echo "---------------- OS package update start ----------------"
+echo "--------------------------------------------------------------"
 
 export DEBIAN_FRONTEND=noninteractive && \
 apt-get update && \
@@ -84,7 +94,9 @@ apt -y autoremove
 
 
 # 서버 시간 변경
+echo "--------------------------------------------------------------"
 echo "---------------- server time change start ----------------"
+echo "--------------------------------------------------------------"
 # timedatectl set-timezone Asia/Seoul
 apt -y install tzdata
 ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
