@@ -10,6 +10,11 @@ else
     exit 9
 fi
 
+# 서버 직접 설정이면 아래와 같이 sudo를 붙여서 실행
+# sudo apt-get install -y software-properties-common
+# 도커 컨테이너 이면 sudo를 제거하고 실행
+apt-get install -y software-properties-common
+
 # passwd 에서 user 목록 저장
 # USERS=`cat /etc/passwd | aws -F ":" '{print $1}'`
 

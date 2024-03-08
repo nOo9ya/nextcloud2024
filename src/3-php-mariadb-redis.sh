@@ -1,16 +1,17 @@
 #!/bin/bash
 
-# Add latest php version repository
-add-apt-repository ppa:ondrej/php
+echo "--------------------------------------------------------------"
+echo "---------------- Installing PHP + MariaDB + Redis"
+echo "--------------------------------------------------------------"
 
 # install php
-read -p "Install php version? [defalt: 8.2]: " PHP_VERSION
+read -p "Install php version? [defalt: 8.3]: " PHP_VERSION
 
-if [ -z "$PHP_VERSION" ]; then
-    PHP_VERSION=8.2
+if [[ -z "$PHP_VERSION" ]]; then
+    PHP_VERSION=8.3
 else
     PHP_VERSION=$PHP_VERSION
-if
+fi
 
 read -p "Install mariadb version? [defalt: 10.11]: " MARIADB_VERSION
 read -p "DB root password: " DB_ROOT_PASSWORD
@@ -19,7 +20,13 @@ if [ -z "$MARIADB_VERSION" ]; then
     MARIADB_VERSION=10.11
 else
     MARIADB_VERSION=$MARIADB_VERSION
-if
+fi
+
+# Add latest php version repository
+add-apt-repository ppa:ondrej/php -y
+# 도커 컨테이너가 아니라면 sudo를 붙여야 한다
+# sudo add-apt-repository ppa:ondrej/php
+apt-get update
 
 echo "--------------------------------------------------------------"
 echo "---------------- Installing php version : $PHP_VERSION"
@@ -30,6 +37,7 @@ apt-get install -y php$PHP_VERSION-fpm \
     php$PHP_VERSION-curl \
     php$PHP_VERSION-mbstring \
     php$PHP_VERSION-xml \
+    php$PHP_VERSION-xmlrpc \
     php$PHP_VERSION-zip \
     php$PHP_VERSION-bcmath \
     php$PHP_VERSION-gmp \
@@ -38,15 +46,41 @@ apt-get install -y php$PHP_VERSION-fpm \
     php$PHP_VERSION-common \
     php$PHP_VERSION-pdo \
     php$PHP_VERSION-soap \
-    php$PHP_VERSION-json \
     php$PHP_VERSION-redis \
     php$PHP_VERSION-opcache \
-    php$PHP_VERSION-readline 
+    php$PHP_VERSION-memcache \
+    php$PHP_VERSION-readline \
+    php$PHP_VERSION-imagick \
+    php$PHP_VERSION-dev \
+    php$PHP_VERSION-imap 
     # php$PHP_VERSION-xsl
     # php$PHP_VERSION-xdebug
 
-sed -i 's/;emergency_restart_threshold = 0/emergency_restart_threshold = 10/g' /etc/php/$PHP_VERSION/fpm/php-fpm.conf && \
-sed -i 's/;emergency_restart_interval = 0/emergency_restart_interval = 1m/g' /etc/php/$PHP_VERSION/fpm/php-fpm.conf && \
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+echo "---------------- Installing PHP ------------------------------"
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+echo "---------------- configure PHP-FPM /etc/php/$PHP_VERSION/fpm/php-fpm.ini"
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+sed -i 's/;emergency_restart_threshold = 0/emergency_restart_threshold = 10/g' /etc/php/$PHP_VERSION/fpm/php-fpm.conf
+sed -i 's/;emergency_restart_interval = 0/emergency_restart_interval = 1m/g' /etc/php/$PHP_VERSION/fpm/php-fpm.conf
+
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+echo "---------------- configure PHP-POOL /etc/php/$PHP_VERSION/fpm/pool.d/www.conf"
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+sed -i 's/pm.max_children = 5/pm.max_children = 20/g' /etc/php/$PHP_VERSION/fpm/pool.d/www.conf
+sed -i 's/pm.start_servers = 2/pm.start_servers = 8/g' /etc/php/$PHP_VERSION/fpm/pool.d/www.conf
+sed -i 's/pm.min_spare_servers = 1/pm.min_spare_servers = 4/g' /etc/php/$PHP_VERSION/fpm/pool.d/www.conf
+sed -i 's/pm.max_spare_servers = 3/pm.max_spare_servers = 12/g' /etc/php/$PHP_VERSION/fpm/pool.d/www.conf
+
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+echo "---------------- configure PHP.INI /etc/php/$PHP_VERSION/fpm/php.ini"
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+sed -i 's/memory_limit = 128M/memory_limit = 1024M/g' /etc/php/$PHP_VERSION/fpm/php.ini
+sed -i 's/post_max_size = 8M/post_max_size = 128M/g' /etc/php/$PHP_VERSION/fpm/php.ini
+sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 128M/g' /etc/php/$PHP_VERSION/fpm/php.ini
+
 
 
 echo "--------------------------------------------------------------"
@@ -111,25 +145,25 @@ query_cache_limit = 2M
 
 group_concat_max_len = 1024
 
-## 마스터 MariaDB 서버에서 레코드 기반 복제를 사용할 때는 READ-COMMITTED 사용 가능
-## 복제에 참여하지 않는 MariaDB 서버에서는 READ-COMMITTED 사용 가능
-## 그 외에는 반드시 REPEATABLE-READ 로 사용
+# 마스터 MariaDB 서버에서 레코드 기반 복제를 사용할 때는 READ-COMMITTED 사용 가능
+# 복제에 참여하지 않는 MariaDB 서버에서는 READ-COMMITTED 사용 가능
+# 그 외에는 반드시 REPEATABLE-READ 로 사용
 transaction-isolation = REPEATABLE-READ
 
-## InnoDB 기본 옵션
-## InnoDB를 사용하지 않는다면 innodb_buffer_pool_size를 최소화하거나
-## InnoDB 스토리지 엔젠을 기동하지 않도록 설정
+# InnoDB 기본 옵션
+# InnoDB를 사용하지 않는다면 innodb_buffer_pool_size를 최소화하거나
+# InnoDB 스토리지 엔젠을 기동하지 않도록 설정
 innodb_buffer_pool_size = 1G
 
-## MyISAM 옵션
-## InnoDB를 사용하지 않고 MyISAM만 사용한다면 key_buffer_size를 4GB까지 설정
+# MyISAM 옵션
+# InnoDB를 사용하지 않고 MyISAM만 사용한다면 key_buffer_size를 4GB까지 설정
 key_buffer_size = 32M
 
-## 로깅 옵션
+# 로깅 옵션
 slow-query-log = 1
 long_query_time = 1
 
-## 복제 옵션
+# 복제 옵션
 binlog_cache_size = 128K
 max_binlog_size = 512M
 expire_logs_days = 14
@@ -160,3 +194,6 @@ service php$PHP_VERSION-fpm start
 service mariadb restart
 service redis-server start
 
+echo "PHP + MariaDB + Redis install is completed!!!"
+echo "------------ service status -----------------"
+service --status-all

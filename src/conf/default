@@ -1,0 +1,92 @@
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    # SSL configuration
+    # listen 443 ssl default_server;
+    # listen [::]:443 ssl default_server;
+    # ssl_certificate /var/www/certs/server.crt;
+    # ssl_certificate_key /var/www/certs/server.key;
+
+    server_name localhost;
+    root /var/www/public;
+
+    error_log  /var/log/nginx/localhost_error.log;
+    access_log /var/log/nginx/localhost_access.log;
+
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Content-Type-Options "nosniff";
+
+    index index.php;
+    charset utf-8;
+    client_max_body_size 100M;
+    
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        # fastcgi_pass 127.0.0.1:9000;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+
+        gzip on;
+        gzip_vary on;
+        gzip_proxied any;
+        gzip_http_version 1.1;
+        gzip_min_length 128;
+        gzip_types application/javascript application/x-javascrip application/json;
+    }
+
+    location ~ \.(gif|jpg|png)$ {
+        add_header Vary "Accept-Encoding";
+        add_header Cache-Control "public, no-transform, max-age=31536000";
+    }
+
+    location ~* \.(css|js)$ {
+        add_header Cache-Control "public";
+        expires 6m;
+        log_not_found off;
+        access_log off;
+        gzip_static on;
+    }
+
+    location ~*.(mp4|ogg|ogv|svg|svgz|eot|otf|woff|woff2|ttf|rss|atom|ico|zip|tgz|gz|rar|bz2|doc|xls|exe|ppt|tar|mid|midi|wav|bmp|rtf|cur)$ {
+        add_header Cache-Control "max-age=31536000";
+        access_log off;
+    }
+
+    # Block (log file, binary, certificate, shell script, sql dump file) access.
+    location ~* \.(log|binary|pem|enc|crt|conf|cnf|sql|sh|key|yml|lock)$ {
+        deny all;
+    }
+
+    # Block access
+    location ~* (composer\.json|composer\.lock|composer\.phar|contributing\.md|license\.txt|readme\.rst|readme\.md|readme\.txt|copyright|artisan|gulpfile\.js|package\.json|phpunit\.xml|access_log|error_log|gruntfile\.js)$ {
+        deny all;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    #location / {
+    #    try_files $uri $uri/ =404;
+    #}
+}
+
+# server {
+#     listen 80;
+#     listen [::]:80;
+#     return 301 https://$host$request_uri;
+# }
