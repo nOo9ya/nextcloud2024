@@ -22,11 +22,14 @@ else
     MARIADB_VERSION=$MARIADB_VERSION
 fi
 
+
+apt-get install software-properties-common -y
+
 # Add latest php version repository
 add-apt-repository ppa:ondrej/php -y
 # 도커 컨테이너가 아니라면 sudo를 붙여야 한다
 # sudo add-apt-repository ppa:ondrej/php
-apt-get update
+apt update
 
 echo "--------------------------------------------------------------"
 echo "---------------- Installing php version : $PHP_VERSION"

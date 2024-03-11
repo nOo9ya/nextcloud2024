@@ -5,10 +5,10 @@ echo "---------------- Installing Nginx"
 echo "--------------------------------------------------------------"
 
 # Add latest nginx version repository
-# add-apt-repository ppa:ondrej/nginx-mainline
+add-apt-repository ppa:ondrej/nginx-mainline -y
 
 # nginx install and start
-# apt-get -y install nginx && service nginx start
+apt-get -y install nginx
 
 
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
@@ -102,3 +102,8 @@ http {
 #       }
 #} 
 " > /etc/nginx/nginx.conf
+
+cp /home/conf/default /etc/nginx/sites-available/
+
+systemctl enable nginx
+service nginx start
