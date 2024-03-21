@@ -1,10 +1,10 @@
 server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
+    listen 80;
+    listen [::]:80;
 
     # SSL configuration
-    # listen 443 ssl default_server;
-    # listen [::]:443 ssl default_server;
+    # listen 443 ssl;
+    # listen [::]:443 ssl;
     # ssl_certificate /var/www/certs/server.crt;
     # ssl_certificate_key /var/www/certs/server.key;
 

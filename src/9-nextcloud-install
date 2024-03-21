@@ -1,0 +1,37 @@
+#!/bin/bash
+
+read -p "nextcloud install user name [cloud.noo9ya.com/n/none] : " NEXTCLOUD
+read -p "php version [8.3] : " PHP_VERSION
+if [[ -z "$NEXTCLOUD" || "$NEXTCLOUD" == "n" || "$NEXTCLOUD" == "" ]]; then
+    echo "NEXTCLOUD stop install"
+    exit 9
+fi
+
+if [[ -z "$PHP_VERSION" ]]; then
+    PHP_VERSION=8.3
+else
+    PHP_VERSION=$PHP_VERSION
+fi
+
+# sudo mkdir  /var/www/$NEXTCLOUD/logs
+# sudo mkdir  /var/www/$NEXTCLOUD/public
+mkdir /var/www/$NEXTCLOUD
+mkdir /var/www/$NEXTCLOUD/logs
+mkdir /var/www/$NEXTCLOUD/public
+
+touch /var/www/$NEXTCLOUD/logs/error.log
+touch /var/www/$NEXTCLOUD/logs/access.log
+
+cd /var/www/$NEXTCLOUD/public
+# sudo wget https://download.nextcloud.com/server/installer/setup-nextcloud.php
+wget https://download.nextcloud.com/server/installer/setup-nextcloud.php
+
+# sudo chown -R www-data:www-data /var/www/{$NEXTCLOUD}/public
+chown -R www-data:www-data /var/www/$NEXTCLOUD/public
+chown -R www-data:www-data /var/www/$NEXTCLOUD/logs/*
+
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+echo "---------------- configure PHP.INI /etc/php/$PHP_VERSION/fpm/php.ini"
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+sed -i 's/memory_limit = 1024M/memory_limit = 8G/g' /etc/php/$PHP_VERSION/fpm/php.ini
+sed -i 's/upload_max_filesize = 128M/upload_max_filesize = 16G/g' /etc/php/$PHP_VERSION/fpm/php.ini

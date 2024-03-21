@@ -28,10 +28,20 @@ echo "--------------------------------------------------------------"
 read -p "Do you want to modify the hostname by entering the domain?(ex:domain.com) : " hostDomain
 
 # 서버 직접 설정이면 아래와 같이 sudo를 붙여서 실행
-# sudo apt-get install -y software-properties-common
+# sudo apt-get install -y software-properties-common wget vim
 # 도커 컨테이너 이면 sudo를 제거하고 실행
-apt-get install -y software-properties-common
-apt update
+apt-get install -y software-properties-common wget vim cron
+apt update -y
+# sudo service cron start
+service cron start
+# cron systemctl 활성화
+# sudo systemctl enable cron.service
+systemctl enable cron.service
+# cron systemctl 등록 확인
+# sudo systemctl list-unit-files | grep cron
+systemctl list-unit-files | grep cron
+# sudo service cron status
+service cron status
 
 # /etc/passwd에서 user가 존재하는지 확인
 # for user in $USERS

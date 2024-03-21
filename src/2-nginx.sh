@@ -104,6 +104,9 @@ http {
 " > /etc/nginx/nginx.conf
 
 cp /home/conf/default /etc/nginx/sites-available/
+cp /home/conf/cloud.noo9ya.com /etc/nginx/sites-available/
+ln -s /etc/nginx/sites-available/cloud.noo9ya.com /etc/nginx/sites-enabled/
 
 systemctl enable nginx
 service nginx start
+# systemctl restart nginx
